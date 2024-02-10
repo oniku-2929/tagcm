@@ -1,5 +1,7 @@
 use clap::Parser;
 
+mod cmd;
+
 #[derive(Parser)]
 struct Opts {
     #[clap(subcommand)]
@@ -11,7 +13,7 @@ enum Command {
     Add(Add),
     Delete(Delete),
     Show,
-    Search,
+    Search(Search),
 }
 
 #[derive(Parser)]
@@ -25,21 +27,26 @@ struct Delete {
     tag: String,
 }
 
+#[derive(Parser)]
+struct Search {
+    search_str: String,
+}
+
 fn main() {
     let opts: Opts = Opts::parse();
 
     match opts.command {
-        Command::Add(add) => {
-            println!("Adding tag {} with command {}", add.tag, add.command);
+        Command::Add(opt) => {
+            cmd::add::add(opt.tag, opt.command);
         }
-        Command::Delete(delete) => {
-            println!("Deleting tag {}", delete.tag);
+        Command::Delete(opt) => {
+            cmd::delete::delete(opt.tag);
         }
         Command::Show => {
-            println!("Showing tags");
+            cmd::show::show("aa".to_string());
         }
-        Command::Search => {
-            println!("Searching for a tag");
+        Command::Search(opt) => {
+            cmd::search::search(opt.search_str);
         }
     }
 }
