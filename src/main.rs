@@ -1,6 +1,11 @@
+use std::path;
+
+use anyhow::Result;
 use clap::Parser;
+use repo::{hashmap_repository::HashMapRepository, tag_data_repository::TagDataRepository};
 
 mod cmd;
+mod repo;
 
 #[derive(Parser)]
 struct Opts {
@@ -12,7 +17,7 @@ struct Opts {
 enum Command {
     Add(Add),
     Delete(Delete),
-    Show,
+    Show(Show),
     Search(Search),
 }
 
@@ -28,25 +33,45 @@ struct Delete {
 }
 
 #[derive(Parser)]
+struct Show {
+    target: String,
+    tag: Option<String>,
+}
+
+#[derive(Parser)]
 struct Search {
     search_str: String,
 }
 
-fn main() {
+fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
+
+    let mut repo: HashMapRepository = repo::hashmap_repository::HashMapRepository::new();
+    let path = path::Path::new("data.json");
+    match repo.init(path.to_str().unwrap()) {
+        Ok(_) => {}
+        Err(e) => {
+            println!("file: {} does not exist. {}", path.to_str().unwrap(), e);
+        }
+    }
 
     match opts.command {
         Command::Add(opt) => {
-            cmd::add::add(opt.tag, opt.command);
+            cmd::add::add(opt.tag, opt.command, repo)?;
         }
         Command::Delete(opt) => {
-            cmd::delete::delete(opt.tag);
+            cmd::delete::delete(repo, opt.tag);
         }
-        Command::Show => {
-            cmd::show::show("aa".to_string());
+        Command::Show(opt) => {
+            if opt.target == "all" {
+                cmd::show::show_all(repo);
+            } else {
+                cmd::show::show(repo, opt.target);
+            }
         }
         Command::Search(opt) => {
-            cmd::search::search(opt.search_str);
+            cmd::search::search(repo, opt.search_str);
         }
     }
+    Ok(())
 }
