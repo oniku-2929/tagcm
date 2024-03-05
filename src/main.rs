@@ -40,7 +40,7 @@ struct Show {
 
 #[derive(Parser)]
 struct Search {
-    search_str: String,
+    search_str: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -69,9 +69,14 @@ fn main() -> Result<()> {
                 cmd::show::show(repo, opt.target);
             }
         }
-        Command::Search(opt) => {
-            cmd::search::search(repo, opt.search_str);
-        }
+        Command::Search(opt) => match opt.search_str {
+            Some(_) => {
+                cmd::search::search(repo, opt.search_str.unwrap())?;
+            }
+            None => {
+                cmd::search::search_by_input(repo)?;
+            }
+        },
     }
     Ok(())
 }
