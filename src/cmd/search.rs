@@ -31,18 +31,12 @@ pub fn search<T: TagDataRepository>(repo: T, search_str: String) -> Result<()> {
     Ok(())
 }
 
-enum InputMode {
-    Normal,
-    Editing,
-}
-
 struct App<T>
 where
     T: TagDataRepository,
 {
     input: String,
     cursor_position: usize,
-    input_mode: InputMode,
     messages: Vec<String>,
     repo: T,
 }
@@ -54,7 +48,6 @@ where
     fn default() -> App<T> {
         App {
             input: String::new(),
-            input_mode: InputMode::Normal,
             messages: Vec::new(),
             cursor_position: 0,
             repo: TagDataRepository::new(),
@@ -171,17 +164,8 @@ fn run_app<B: Backend, T: TagDataRepository>(
         terminal.draw(|f| render(f, &app))?;
 
         if let Event::Key(key) = event::read()? {
-            match app.input_mode {
-                InputMode::Normal => match key.code {
-                    KeyCode::Char('e') => {
-                        app.input_mode = InputMode::Editing;
-                    }
-                    KeyCode::Char('q') => {
-                        return Ok(());
-                    }
-                    _ => {}
-                },
-                InputMode::Editing if key.kind == KeyEventKind::Press => match key.code {
+            if key.kind == KeyEventKind::Press {
+                match key.code {
                     KeyCode::Enter => app.submit_message(),
                     KeyCode::Char(to_insert) => {
                         app.enter_char(to_insert);
@@ -195,15 +179,14 @@ fn run_app<B: Backend, T: TagDataRepository>(
                     KeyCode::Right => {
                         app.move_cursor_right(1);
                     }
-                    KeyCode::Esc => {
-                        app.input_mode = InputMode::Normal;
-                    }
                     KeyCode::Tab => {
                         app.auto_complete();
                     }
+                    KeyCode::Esc => {
+                        return Ok(());
+                    }
                     _ => {}
-                },
-                _ => {}
+                }
             }
         }
     }
@@ -217,46 +200,25 @@ fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
     ]);
     let [help_area, input_area, messages_area] = vertical.areas(f.size());
 
-    let (msg, style) = match app.input_mode {
-        InputMode::Normal => (
-            vec![
-                "Press ".into(),
-                "q".bold(),
-                " to exit, ".into(),
-                "e".bold(),
-                " to start editing.".bold(),
-            ],
-            Style::default().add_modifier(Modifier::RAPID_BLINK),
-        ),
-        InputMode::Editing => (
-            vec![
-                "Press ".into(),
-                "Esc".bold(),
-                " to stop editing, ".into(),
-                "Enter".bold(),
-                " to record the message".into(),
-            ],
-            Style::default(),
-        ),
-    };
-    let text = Text::from(Line::from(msg)).patch_style(style);
+    let msg = vec![
+        "Press ".into(),
+        "tab".bold(),
+        " to auto complete tag and command, ".into(),
+        "esc".bold(),
+        " to exit seatch mode.".bold(),
+    ];
+    let text = Text::from(Line::from(msg)).patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, help_area);
 
     let input = Paragraph::new(app.input.as_str())
-        .style(match app.input_mode {
-            InputMode::Normal => Style::default(),
-            InputMode::Editing => Style::default().fg(Color::Yellow),
-        })
+        .style(Style::default())
         .block(Block::default().borders(Borders::ALL).title("Input"));
-    f.render_widget(input, input_area);
-    match app.input_mode {
-        InputMode::Normal => {}
-        InputMode::Editing => f.set_cursor(
-            input_area.x + app.cursor_position as u16 + 1,
-            input_area.y + 1,
-        ),
-    }
+    f.render_widget(input, input_area);    
+    f.set_cursor(
+        input_area.x + app.cursor_position as u16 + 1,
+        input_area.y + 1,
+    );
 
     let messages: Vec<ListItem> = app
         .messages
