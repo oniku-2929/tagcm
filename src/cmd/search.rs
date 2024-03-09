@@ -122,7 +122,7 @@ impl<T: TagDataRepository> App<T> {
     }
 
     fn auto_complete(&mut self) {
-        //self.messages.push(self.repo.get_all_tags().concat());
+        self.suggestions.clear();
         let tags = search(&self.repo, self.input.clone()).unwrap();
         for tag in tags {
             self.suggestions.push(tag);
@@ -186,8 +186,10 @@ fn run_app<B: Backend, T: TagDataRepository>(
             if key.kind == KeyEventKind::Press {
                 match key.code {
                     KeyCode::Enter => {
-                        app.choose_suggestion();
-                        return Ok(());
+                        if app.suggestions.len() > 0 {
+                            app.choose_suggestion();
+                            return Ok(());
+                        }
                     }
                     KeyCode::Char(to_insert) => {
                         app.enter_char(to_insert);
