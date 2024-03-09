@@ -71,7 +71,10 @@ fn main() -> Result<()> {
         }
         Command::Search(opt) => match opt.search_str {
             Some(_) => {
-                cmd::search::search(repo, opt.search_str.unwrap())?;
+                let tags = cmd::search::search(&repo, opt.search_str.unwrap())?;
+                for tag in tags {
+                    println!("tag: {}, command: {}", tag.tag, tag.command);
+                }
             }
             None => {
                 cmd::search::search_by_input(repo)?;

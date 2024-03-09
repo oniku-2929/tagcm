@@ -1,34 +1,44 @@
-use crate::repo::{hashmap_repository::HashMapRepository, tag_data_repository::TagDataRepository};
+use crate::repo::tag_data_repository::TagDataRepository;
 use anyhow::Result;
 
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
-    execute,
-    terminal::{
-        disable_raw_mode, enable_raw_mode, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
-    },
+    event::{self, Event, KeyCode, KeyEventKind},
+    terminal::{enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 
+use cli_clipboard;
 use ratatui::{prelude::*, widgets::*};
 use std::io;
 use std::io::stdout;
 
-pub fn search<T: TagDataRepository>(repo: T, search_str: String) -> Result<()> {
-    println!("Searching for tag {}", search_str);
+pub struct TagData {
+    pub tag: String,
+    pub command: String,
+}
+
+impl TagData {
+    fn new(tag: String, command: String) -> TagData {
+        TagData { tag, command }
+    }
+}
+
+pub fn search<T: TagDataRepository>(repo: &T, search_str: String) -> Result<Vec<TagData>> {
+    //println!("Searching for tag {}", search_str);
     let all_tags = repo.get_all_tags();
 
+    let mut results: Vec<TagData> = Vec::new();
     for tag in all_tags {
         if tag.starts_with(&search_str) {
             match repo.get_tag_data(&tag) {
                 Some(cmd) => {
-                    println!("{}: {}", tag, cmd);
+                    results.push(TagData::new(tag, cmd));
                 }
                 None => println!("Command not found"),
             }
         }
     }
-    Ok(())
+    Ok(results)
 }
 
 struct App<T>
@@ -36,8 +46,9 @@ where
     T: TagDataRepository,
 {
     input: String,
-    cursor_position: usize,
-    messages: Vec<String>,
+    cursor_input_position: usize,
+    cursor_commnad_position: usize,
+    suggestions: Vec<TagData>,
     repo: T,
 }
 
@@ -48,8 +59,9 @@ where
     fn default() -> App<T> {
         App {
             input: String::new(),
-            messages: Vec::new(),
-            cursor_position: 0,
+            suggestions: Vec::new(),
+            cursor_input_position: 0,
+            cursor_commnad_position: 0,
             repo: TagDataRepository::new(),
         }
     }
@@ -61,33 +73,28 @@ impl<T: TagDataRepository> App<T> {
     }
 
     fn move_cursor_left(&mut self, size: usize) {
-        let cursor_moved_left = self.cursor_position.saturating_sub(size);
-        self.cursor_position = self.clamp_cursor(cursor_moved_left);
+        let cursor_moved_left = self.cursor_input_position.saturating_sub(size);
+        self.cursor_input_position = self.clamp_cursor(cursor_moved_left);
     }
 
     fn move_cursor_right(&mut self, size: usize) {
-        let cursor_moved_right = self.cursor_position.saturating_add(size);
-        self.cursor_position = self.clamp_cursor(cursor_moved_right);
+        let cursor_moved_right = self.cursor_input_position.saturating_add(size);
+        self.cursor_input_position = self.clamp_cursor(cursor_moved_right);
     }
 
     fn enter_char(&mut self, new_char: char) {
-        self.input.insert(self.cursor_position, new_char);
+        self.input.insert(self.cursor_input_position, new_char);
         self.move_cursor_right(1);
     }
 
-    fn enter_str(&mut self, new_str: &str) {
-        self.input.insert_str(self.cursor_position, new_str);
-        self.move_cursor_right(new_str.len());
-    }
-
     fn delete_char(&mut self) {
-        let is_not_cursor_leftmost = self.cursor_position != 0;
+        let is_not_cursor_leftmost = self.cursor_input_position != 0;
         if is_not_cursor_leftmost {
             // Method "remove" is not used on the saved text for deleting the selected char.
             // Reason: Using remove on String works on bytes instead of the chars.
             // Using remove would require special care because of char boundaries.
 
-            let current_index = self.cursor_position;
+            let current_index = self.cursor_input_position;
             let from_left_to_current_index = current_index - 1;
 
             // Getting all characters before the selected character.
@@ -106,18 +113,41 @@ impl<T: TagDataRepository> App<T> {
         new_cursor_pos.clamp(0, self.input.len())
     }
 
-    fn reset_cursor(&mut self) {
-        self.cursor_position = 0;
-    }
-
-    fn submit_message(&mut self) {
-        self.messages.push(self.input.clone());
-        self.input.clear();
-        self.reset_cursor();
+    fn choose_suggestion(&mut self) {
+        cli_clipboard::set_contents(
+            self.suggestions[self.cursor_commnad_position]
+                .command
+                .clone(),
+        )
+        .unwrap();
     }
 
     fn auto_complete(&mut self) {
-        self.messages.push(self.repo.get_all_tags().concat());
+        //self.messages.push(self.repo.get_all_tags().concat());
+        let tags = search(&self.repo, self.input.clone()).unwrap();
+        for tag in tags {
+            self.suggestions.push(tag);
+        }
+    }
+
+    pub fn get_current_command_input(&self) -> usize {
+        self.cursor_commnad_position
+    }
+
+    pub fn add_current_command_input(&mut self, add: i32) {
+        if add > 0 {
+            if self.suggestions.len() - 1 <= self.cursor_commnad_position {
+                self.cursor_commnad_position = 0;
+                return;
+            }
+            self.cursor_commnad_position = self.cursor_commnad_position + 1;
+        } else {
+            if self.cursor_commnad_position == 0 {
+                self.cursor_commnad_position = self.suggestions.len() - 1;
+                return;
+            }
+            self.cursor_commnad_position = self.cursor_commnad_position - 1;
+        }
     }
 }
 
@@ -140,19 +170,9 @@ pub fn search_by_input<T: TagDataRepository>(repo: T) -> Result<()> {
     let mut app = App::<T>::default();
     app.set_repo(repo);
 
-    let res = run_app(&mut terminal, app);
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    run_app(&mut terminal, app)?;
 
-    if let Err(err) = res {
-        println!("{err:?}");
-    }
-
+    stdout().execute(LeaveAlternateScreen)?;
     Ok(())
 }
 
@@ -166,7 +186,10 @@ fn run_app<B: Backend, T: TagDataRepository>(
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
                 match key.code {
-                    KeyCode::Enter => app.submit_message(),
+                    KeyCode::Enter => {
+                        app.choose_suggestion();
+                        return Ok(());
+                    }
                     KeyCode::Char(to_insert) => {
                         app.enter_char(to_insert);
                     }
@@ -181,6 +204,12 @@ fn run_app<B: Backend, T: TagDataRepository>(
                     }
                     KeyCode::Tab => {
                         app.auto_complete();
+                    }
+                    KeyCode::Down => {
+                        app.add_current_command_input(1);
+                    }
+                    KeyCode::Up => {
+                        app.add_current_command_input(-1);
                     }
                     KeyCode::Esc => {
                         return Ok(());
@@ -207,29 +236,35 @@ fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
         "esc".bold(),
         " to exit seatch mode.".bold(),
     ];
-    let text = Text::from(Line::from(msg)).patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
+    let text = Text::from(Line::from(msg))
+        .patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, help_area);
 
     let input = Paragraph::new(app.input.as_str())
         .style(Style::default())
         .block(Block::default().borders(Borders::ALL).title("Input"));
-    f.render_widget(input, input_area);    
+    f.render_widget(input, input_area);
     f.set_cursor(
-        input_area.x + app.cursor_position as u16 + 1,
+        input_area.x + app.cursor_input_position as u16 + 1,
         input_area.y + 1,
     );
 
     let messages: Vec<ListItem> = app
-        .messages
+        .suggestions
         .iter()
         .enumerate()
         .map(|(i, m)| {
-            let content = Line::from(Span::raw(format!("{i}: {m}")));
+            let content = if i == app.get_current_command_input() {
+                Line::from(Span::raw(format!("{0}: {1}", m.tag, m.command)).on_white())
+            } else {
+                Line::from(Span::raw(format!("{0}: {1}", m.tag, m.command)))
+            };
+
             ListItem::new(content)
         })
         .collect();
     let messages =
-        List::new(messages).block(Block::default().borders(Borders::ALL).title("Messages"));
+        List::new(messages).block(Block::default().borders(Borders::ALL).title("Commands"));
     f.render_widget(messages, messages_area);
 }
