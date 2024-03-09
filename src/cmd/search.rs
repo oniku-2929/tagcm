@@ -24,7 +24,6 @@ impl TagData {
 }
 
 pub fn search<T: TagDataRepository>(repo: &T, search_str: String) -> Result<Vec<TagData>> {
-    //println!("Searching for tag {}", search_str);
     let all_tags = repo.get_all_tags();
 
     let mut results: Vec<TagData> = Vec::new();
