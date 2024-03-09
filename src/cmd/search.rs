@@ -135,6 +135,11 @@ impl<T: TagDataRepository> App<T> {
     }
 
     pub fn add_current_command_input(&mut self, add: i32) {
+        if self.suggestions.is_empty() {
+            self.cursor_commnad_position = 0;
+            return;
+        }
+
         if add > 0 {
             if self.suggestions.len() - 1 <= self.cursor_commnad_position {
                 self.cursor_commnad_position = 0;
