@@ -123,6 +123,7 @@ impl<T: TagDataRepository> App<T> {
 
     fn auto_complete(&mut self) {
         self.suggestions.clear();
+        self.cursor_commnad_position = 0;
         let tags = search(&self.repo, self.input.clone()).unwrap();
         for tag in tags {
             self.suggestions.push(tag);
