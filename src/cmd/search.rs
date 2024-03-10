@@ -157,16 +157,6 @@ impl<T: TagDataRepository> App<T> {
 }
 
 pub fn search_by_input<T: TagDataRepository>(repo: T) -> Result<()> {
-    let all_tags = repo.get_all_tags();
-    for tag in all_tags {
-        match repo.get_tag_data(&tag) {
-            Some(cmd) => {
-                println!("{}: {}", tag, cmd);
-            }
-            None => println!("Command not found"),
-        }
-    }
-
     enable_raw_mode()?;
     stdout().execute(EnterAlternateScreen)?;
 
@@ -241,7 +231,7 @@ fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
         "tab".bold(),
         " to auto complete tag and command, ".into(),
         "esc".bold(),
-        " to exit seatch mode.".bold(),
+        " to exit search mode.".bold(),
     ];
     let text = Text::from(Line::from(msg))
         .patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
