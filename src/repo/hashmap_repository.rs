@@ -25,7 +25,7 @@ impl TagDataRepository for HashMapRepository {
     }
 
     fn save(&self) -> Result<()> {
-        let serialized = serde_json::to_string(&self.data)?;
+        let serialized = serde_json::to_string_pretty(&self.data)?;
         let mut file = File::create(self.file_path.as_str())?;
         file.write_all(serialized.as_bytes())?;
         Ok(())
