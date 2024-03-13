@@ -189,9 +189,11 @@ fn run_app<B: Backend, T: TagDataRepository>(
                     }
                     KeyCode::Char(to_insert) => {
                         app.enter_char(to_insert);
+                        app.auto_complete();
                     }
                     KeyCode::Backspace => {
                         app.delete_char();
+                        app.auto_complete();
                     }
                     KeyCode::Left => {
                         app.move_cursor_left(1);
