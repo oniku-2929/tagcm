@@ -10,5 +10,6 @@ anyhow = "1.0.80"
 clap = { version = "4.5.0", features = ["derive"] }
 cli-clipboard = "0.4.0"
 crossterm = "0.27.0"
+directories = "5.0.1"
 ratatui = "0.26.1"
 serde_json = "1.0.113"

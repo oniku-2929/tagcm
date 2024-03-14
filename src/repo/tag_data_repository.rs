@@ -10,4 +10,5 @@ pub trait TagDataRepository {
     fn get_all_data(&self) -> Vec<(String, String)>;
     fn add_tag_data(&mut self, tag: String, command: String);
     fn remove_tag_data(&mut self, tag: &str);
+    fn get_data_path(&self) -> String;
 }

@@ -2,6 +2,7 @@ use std::path;
 
 use anyhow::Result;
 use clap::Parser;
+use directories::BaseDirs;
 use repo::{hashmap_repository::HashMapRepository, tag_data_repository::TagDataRepository};
 
 mod cmd;
@@ -11,6 +12,9 @@ mod repo;
 struct Opts {
     #[clap(subcommand)]
     command: Command,
+
+    #[clap(long)]
+    data_path: Option<String>,
 }
 
 #[derive(Parser)]
@@ -43,17 +47,29 @@ struct Search {
     search_str: Option<String>,
 }
 
+const COMMAND_NAME: &str = "tagcm";
+const DEFAULT_FILE_NAME: &str = "tags.json";
+
+fn get_data_path(data_path: Option<String>) -> String {
+    if let Some(path) = data_path {
+        return path;
+    }
+    if let Some(base_dir) = BaseDirs::new() {
+        return path::Path::new(base_dir.config_dir().to_str().unwrap())
+            .join(COMMAND_NAME)
+            .join(DEFAULT_FILE_NAME)
+            .into_os_string()
+            .into_string()
+            .unwrap();
+    }
+    return String::new();
+}
+
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
 
     let mut repo: HashMapRepository = repo::hashmap_repository::HashMapRepository::new();
-    let path = path::Path::new("data.json");
-    match repo.init(path.to_str().unwrap()) {
-        Ok(_) => {}
-        Err(e) => {
-            println!("file: {} does not exist. {}", path.to_str().unwrap(), e);
-        }
-    }
+    repo.init(&get_data_path(opts.data_path))?;
 
     match opts.command {
         Command::Add(opt) => {

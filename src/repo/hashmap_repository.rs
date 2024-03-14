@@ -1,8 +1,9 @@
 use super::tag_data_repository::TagDataRepository;
 use anyhow::{Ok, Result};
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
+use std::path;
 
 pub struct HashMapRepository {
     data: HashMap<String, String>,
@@ -18,7 +19,13 @@ impl TagDataRepository for HashMapRepository {
     }
 
     fn init(&mut self, file_path: &str) -> Result<()> {
-        self.file_path = file_path.to_string();
+        let data_path = path::Path::new(file_path);
+        if !data_path.exists() {
+            fs::create_dir_all(data_path.parent().unwrap())?;
+            let mut file = File::create(file_path)?;
+            file.write_all(b"{}")?;
+        }
+        self.file_path = data_path.display().to_string();
         let file = File::open(file_path)?;
         self.data = serde_json::from_reader(file)?;
         Ok(())
@@ -57,5 +64,9 @@ impl TagDataRepository for HashMapRepository {
 
     fn remove_tag_data(&mut self, tag: &str) {
         self.data.remove(tag);
+    }
+
+    fn get_data_path(&self) -> String {
+        self.file_path.clone()
     }
 }
