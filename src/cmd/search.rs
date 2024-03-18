@@ -212,29 +212,50 @@ fn run_app<B: Backend, T: TagDataRepository>(
     }
 }
 
+const TITLE_INPUT: &str = "Input";
+const TITLE_RESULT: &str = "Search results";
+
 fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
+    let text = vec![
+        Line::from(vec![
+            Span::styled("Press any key:", Style::new().bold()),
+            Span::raw("to start auto-complete tag and command,"),
+            ".".into(),
+        ]),
+        Line::from(vec![
+            Span::styled("key Left, key Right:", Style::new().bold()),
+            Span::raw("move cursor in INPUT window"),
+            ".".into(),
+        ]),
+        Line::from(vec![
+            Span::styled("key Up, key Down:", Style::new().bold()),
+            Span::raw("move cursor in Search results window"),
+            ".".into(),
+        ]),
+        Line::from(vec![
+            Span::styled("Enter:", Style::new().bold()),
+            Span::raw("to choose the command to clipboard and exit search mode"),
+            ".".into(),
+        ]),
+        Line::from(vec![
+            Span::styled("Esc:", Style::new().bold()),
+            Span::raw("to exit search mode"),
+            ".".into(),
+        ]),
+    ];
+
     let vertical = Layout::vertical([
-        Constraint::Length(1),
+        Constraint::Length(text.len() as u16),
         Constraint::Length(3),
         Constraint::Min(1),
     ]);
     let [help_area, input_area, messages_area] = vertical.areas(f.size());
-
-    let msg = vec![
-        "Press ".into(),
-        "tab".bold(),
-        " to auto complete tag and command, ".into(),
-        "esc".bold(),
-        " to exit search mode.".bold(),
-    ];
-    let text = Text::from(Line::from(msg))
-        .patch_style(Style::default().add_modifier(Modifier::RAPID_BLINK));
     let help_message = Paragraph::new(text);
     f.render_widget(help_message, help_area);
 
     let input = Paragraph::new(app.input.as_str())
         .style(Style::default())
-        .block(Block::default().borders(Borders::ALL).title("Input"));
+        .block(Block::default().borders(Borders::ALL).title(TITLE_INPUT));
     f.render_widget(input, input_area);
     f.set_cursor(
         input_area.x + app.cursor_input_position as u16 + 1,
@@ -256,6 +277,6 @@ fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
         })
         .collect();
     let messages =
-        List::new(messages).block(Block::default().borders(Borders::ALL).title("Commands"));
+        List::new(messages).block(Block::default().borders(Borders::ALL).title(TITLE_RESULT));
     f.render_widget(messages, messages_area);
 }
