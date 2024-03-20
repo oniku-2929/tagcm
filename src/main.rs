@@ -62,7 +62,7 @@ fn get_data_path(data_path: Option<String>) -> String {
             .into_string()
             .unwrap();
     }
-    return String::new();
+    String::new()
 }
 
 fn main() -> Result<()> {

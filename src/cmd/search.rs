@@ -137,13 +137,13 @@ impl<T: TagDataRepository> App<T> {
                 self.cursor_commnad_position = 0;
                 return;
             }
-            self.cursor_commnad_position = self.cursor_commnad_position + 1;
+            self.cursor_commnad_position += 1;
         } else {
             if self.cursor_commnad_position == 0 {
                 self.cursor_commnad_position = self.suggestions.len() - 1;
                 return;
             }
-            self.cursor_commnad_position = self.cursor_commnad_position - 1;
+            self.cursor_commnad_position -= 1;
         }
     }
 }
@@ -174,7 +174,7 @@ fn run_app<B: Backend, T: TagDataRepository>(
             if key.kind == KeyEventKind::Press {
                 match key.code {
                     KeyCode::Enter => {
-                        if app.suggestions.len() > 0 {
+                        if !app.suggestions.is_empty() {
                             app.choose_suggestion();
                             return Ok(());
                         }
