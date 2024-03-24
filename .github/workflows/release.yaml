@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - release
+  pull_request:
+    branches:
+      - release
+    types:
+      - closed
+
+permissions:
+  contents: read
 
 jobs:
   build_and_release:
