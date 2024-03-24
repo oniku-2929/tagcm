@@ -27,15 +27,25 @@ jobs:
       - name: Build Release Binary
         run: cargo build --release
 
+      - name: 'Get Previous tag'
+        id: previous_tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.1.0
+
       - name: Draft Release Notes
         uses: release-drafter/release-drafter@v6
+        with:
+          tag: ${{steps.previous_tag.outputs.tag}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{steps.previous_tag.outputs.tag}}
           files: |
             target/release/tagcm
+          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
