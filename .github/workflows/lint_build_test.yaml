@@ -1,11 +1,27 @@
-name: tagcm-gha-workflows
+name: Lint, Build and Test
+
 on:
   push:
     branches:
       - main
+      - develop
+      - feature/*
+      - fix/*
+      - hotfix/*
+      - test/*
+      - refactor/*
+      - doc/*
   pull_request:
     branches:
       - main
+      - develop
+      - feature/*
+      - fix/*
+      - hotfix/*
+      - test/*
+      - refactor/*
+      - doc/*
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -23,3 +39,7 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Run clippy
         run: cargo clippy -- -D warnings
+      - name: Build
+        run: cargo build
+      - name: Test
+        run: cargo test
