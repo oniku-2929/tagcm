@@ -3,8 +3,6 @@ name: Lint, Build and Test
 on:
   push:
     branches:
-      - main
-      - develop
       - feature/*
       - fix/*
       - hotfix/*
@@ -15,15 +13,11 @@ on:
     branches:
       - main
       - develop
-      - feature/*
-      - fix/*
-      - hotfix/*
-      - test/*
-      - refactor/*
-      - doc/*
+      - release/*
+
 
 jobs:
-  lint:
+  lint_build_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
