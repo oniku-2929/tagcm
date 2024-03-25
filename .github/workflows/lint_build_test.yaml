@@ -17,7 +17,7 @@ on:
 
 
 jobs:
-  lint:
+  lint_build_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
