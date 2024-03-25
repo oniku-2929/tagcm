@@ -1,9 +1,6 @@
 name: Build, Release and Create draft notes
 
 on:
-  push:
-    branches:
-      - release
   pull_request:
     branches:
       - release
