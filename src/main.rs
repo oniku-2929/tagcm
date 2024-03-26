@@ -68,7 +68,7 @@ fn get_data_path(data_path: Option<String>) -> String {
 fn main() -> Result<()> {
     let opts: Opts = Opts::parse();
 
-    let mut repo: HashMapRepository = repo::hashmap_repository::HashMapRepository::new();
+    let mut repo: &HashMapRepository = &repo::hashmap_repository::HashMapRepository::new();
     repo.init(&get_data_path(opts.data_path))?;
 
     match opts.command {
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
         }
         Command::Search(opt) => match opt.search_str {
             Some(_) => {
-                let tags = cmd::search::search(&repo, opt.search_str.unwrap())?;
+                let tags = cmd::search::search(repo, opt.search_str.unwrap())?;
                 for tag in tags {
                     println!("tag: {}, command: {}", tag.tag, tag.command);
                 }

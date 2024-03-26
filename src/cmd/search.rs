@@ -40,6 +40,27 @@ pub fn search<T: TagDataRepository>(repo: &T, search_str: String) -> Result<Vec<
     Ok(results)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::repo::hashmap_repository::HashMapRepository;
+    #[test]
+    fn test_search() {
+        let repo = &HashMapRepository::new();
+        repo.add_tag_data("test".to_string(), "echo test".to_string());
+        repo.add_tag_data("test2".to_string(), "echo test2".to_string());
+        let result = search(repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].tag, "test");
+        assert_eq!(result[0].command, "echo test");
+
+        repo.remove_tag_data("test");
+        repo.remove_tag_data("test2");
+        let result = search(repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 0);
+    }
+}
+
 struct App<T>
 where
     T: TagDataRepository,
