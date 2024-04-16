@@ -51,6 +51,6 @@ impl TagDataRepository for UnitTestRepository {
     }
 
     fn get_data_path(&self) -> String {
-        return "".to_string();
+        "".to_string()
     }
 }

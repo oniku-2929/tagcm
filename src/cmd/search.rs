@@ -99,22 +99,12 @@ mod tests {
     }
 }
 
+#[derive(Default)]
 struct App {
     input: String,
     cursor_input_position: usize,
     cursor_commnad_position: usize,
     suggestions: Vec<TagData>,
-}
-
-impl Default for App {
-    fn default() -> App {
-        App {
-            input: String::new(),
-            suggestions: Vec::new(),
-            cursor_input_position: 0,
-            cursor_commnad_position: 0,
-        }
-    }
 }
 
 impl App {
