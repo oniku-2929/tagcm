@@ -15,20 +15,20 @@ pub fn show<T: TagDataRepository>(repo: &T, tag: String) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::repo::hashmap_repository::HashMapRepository;
+    use crate::repo::unittest_repository::UnitTestRepository;
     #[test]
     fn test_show() {
-        let repo = &HashMapRepository::new();
+        let mut repo = UnitTestRepository::new();
         repo.add_tag_data("test".to_string(), "echo test".to_string());
-        show(repo, "test".to_string());
-        show(repo, "test2".to_string());
+        show(&repo, "test".to_string());
+        show(&repo, "test2".to_string());
     }
 
     #[test]
     fn test_show_all() {
-        let repo = &HashMapRepository::new();
+        let mut repo = UnitTestRepository::new();
         repo.add_tag_data("test".to_string(), "echo test".to_string());
         repo.add_tag_data("test2".to_string(), "echo test2".to_string());
-        show_all(repo);
+        show_all(&repo);
     }
 }

@@ -12,6 +12,7 @@ use ratatui::{prelude::*, widgets::*};
 use std::io;
 use std::io::stdout;
 
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct TagData {
     pub tag: String,
     pub command: String,
@@ -37,61 +38,86 @@ pub fn search<T: TagDataRepository>(repo: &T, search_str: String) -> Result<Vec<
             }
         }
     }
+    results.sort();
     Ok(results)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::repo::hashmap_repository::HashMapRepository;
+    use crate::repo::unittest_repository::UnitTestRepository;
+
     #[test]
-    fn test_search() {
-        let repo = &HashMapRepository::new();
+    fn test_search_single_tag() {
+        let mut repo = UnitTestRepository::new();
         repo.add_tag_data("test".to_string(), "echo test".to_string());
-        repo.add_tag_data("test2".to_string(), "echo test2".to_string());
-        let result = search(repo, "test".to_string()).unwrap();
+        let result = search(&repo, "test".to_string()).unwrap();
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].tag, "test");
         assert_eq!(result[0].command, "echo test");
 
         repo.remove_tag_data("test");
-        repo.remove_tag_data("test2");
-        let result = search(repo, "test".to_string()).unwrap();
+        let result = search(&repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_search_different_prefix() {
+        let mut repo = UnitTestRepository::new();
+        repo.add_tag_data("test".to_string(), "echo test".to_string());
+        repo.add_tag_data("hoge".to_string(), "echo hoge".to_string());
+        let result = search(&repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].tag, "test");
+        assert_eq!(result[0].command, "echo test");
+
+        repo.remove_tag_data("test");
+        repo.remove_tag_data("hoge");
+        let result = search(&repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_search_same_prefix() {
+        let mut repo = UnitTestRepository::new();
+        repo.add_tag_data("test".to_string(), "echo test".to_string());
+        repo.add_tag_data("test2".to_string(), "echo test2".to_string());
+        let result = search(&repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].tag, "test");
+        assert_eq!(result[0].command, "echo test");
+        assert_eq!(result[1].tag, "test2");
+        assert_eq!(result[1].command, "echo test2");
+
+        repo.remove_tag_data("test");
+        let mut result = search(&repo, "test".to_string()).unwrap();
+        assert_eq!(result.len(), 1);
+
+        repo.remove_tag_data("hoge");
+        result = search(&repo, "hoge".to_string()).unwrap();
         assert_eq!(result.len(), 0);
     }
 }
 
-struct App<T>
-where
-    T: TagDataRepository,
-{
+struct App {
     input: String,
     cursor_input_position: usize,
     cursor_commnad_position: usize,
     suggestions: Vec<TagData>,
-    repo: T,
 }
 
-impl<T: TagDataRepository> Default for App<T>
-where
-    T: TagDataRepository,
-{
-    fn default() -> App<T> {
+impl Default for App {
+    fn default() -> App {
         App {
             input: String::new(),
             suggestions: Vec::new(),
             cursor_input_position: 0,
             cursor_commnad_position: 0,
-            repo: TagDataRepository::new(),
         }
     }
 }
 
-impl<T: TagDataRepository> App<T> {
-    fn set_repo(&mut self, repo: T) {
-        self.repo = repo;
-    }
-
+impl App {
     fn move_cursor_left(&mut self, size: usize) {
         let cursor_moved_left = self.cursor_input_position.saturating_sub(size);
         self.cursor_input_position = self.clamp_cursor(cursor_moved_left);
@@ -134,10 +160,10 @@ impl<T: TagDataRepository> App<T> {
         .unwrap();
     }
 
-    fn auto_complete(&mut self) {
+    fn auto_complete<T: TagDataRepository>(&mut self, repo: &T) {
         self.suggestions.clear();
         self.cursor_commnad_position = 0;
-        let tags = search(&self.repo, self.input.clone()).unwrap();
+        let tags = search(repo, self.input.clone()).unwrap();
         for tag in tags {
             self.suggestions.push(tag);
         }
@@ -169,16 +195,18 @@ impl<T: TagDataRepository> App<T> {
     }
 }
 
-pub fn search_by_input<T: TagDataRepository>(repo: T) -> Result<()> {
+pub fn search_by_input<T: TagDataRepository>(repo: &T) -> Result<()>
+where
+    T: TagDataRepository,
+{
     enable_raw_mode()?;
     stdout().execute(EnterAlternateScreen)?;
 
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
 
-    let mut app = App::<T>::default();
-    app.set_repo(repo);
+    let app = App::default();
 
-    run_app(&mut terminal, app)?;
+    run_app(&mut terminal, app, repo)?;
 
     stdout().execute(LeaveAlternateScreen)?;
     Ok(())
@@ -186,7 +214,8 @@ pub fn search_by_input<T: TagDataRepository>(repo: T) -> Result<()> {
 
 fn run_app<B: Backend, T: TagDataRepository>(
     terminal: &mut Terminal<B>,
-    mut app: App<T>,
+    mut app: App,
+    repo: &T,
 ) -> io::Result<()> {
     loop {
         terminal.draw(|f| render(f, &app))?;
@@ -202,11 +231,11 @@ fn run_app<B: Backend, T: TagDataRepository>(
                     }
                     KeyCode::Char(to_insert) => {
                         app.enter_char(to_insert);
-                        app.auto_complete();
+                        app.auto_complete(repo);
                     }
                     KeyCode::Backspace => {
                         app.delete_char();
-                        app.auto_complete();
+                        app.auto_complete(repo);
                     }
                     KeyCode::Left => {
                         app.move_cursor_left(1);
@@ -215,7 +244,7 @@ fn run_app<B: Backend, T: TagDataRepository>(
                         app.move_cursor_right(1);
                     }
                     KeyCode::Tab => {
-                        app.auto_complete();
+                        app.auto_complete(repo);
                     }
                     KeyCode::Down => {
                         app.add_current_command_input(1);
@@ -236,7 +265,7 @@ fn run_app<B: Backend, T: TagDataRepository>(
 const TITLE_INPUT: &str = "Input";
 const TITLE_RESULT: &str = "Search results";
 
-fn render<T: TagDataRepository>(f: &mut Frame, app: &App<T>) {
+fn render(f: &mut Frame, app: &App) {
     let text = vec![
         Line::from(vec![
             Span::styled("Press any key:", Style::new().bold()),
