@@ -73,16 +73,16 @@ fn main() -> Result<()> {
 
     match opts.command {
         Command::Add(opt) => {
-            cmd::add::add(opt.tag, opt.command, repo)?;
+            cmd::add::add(opt.tag, opt.command, &mut repo)?;
         }
         Command::Delete(opt) => {
-            cmd::delete::delete(repo, opt.tag);
+            cmd::delete::delete(&mut repo, opt.tag);
         }
         Command::Show(opt) => {
             if opt.target == "all" {
-                cmd::show::show_all(repo);
+                cmd::show::show_all(&repo);
             } else {
-                cmd::show::show(repo, opt.target);
+                cmd::show::show(&repo, opt.target);
             }
         }
         Command::Search(opt) => match opt.search_str {
@@ -93,7 +93,7 @@ fn main() -> Result<()> {
                 }
             }
             None => {
-                cmd::search::search_by_input(repo)?;
+                cmd::search::search_by_input(&repo)?;
             }
         },
     }
