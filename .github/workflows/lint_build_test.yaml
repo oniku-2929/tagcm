@@ -9,11 +9,6 @@ on:
       - test/*
       - refactor/*
       - doc/*
-  pull_request:
-    branches:
-      - main
-      - develop
-      - release/*
 
 
 jobs:
