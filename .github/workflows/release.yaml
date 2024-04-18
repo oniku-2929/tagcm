@@ -3,7 +3,7 @@ name: Build, Release and Create draft notes
 on:
   pull_request:
     branches:
-      - release/*
+      - main
     types:
       - closed
 
