@@ -1,16 +1,17 @@
-name: Build, Release and Create draft notes
+name: update draft notes
 
 on:
-  push:
-    tags:
-      - v*
-##ここmainかつタグがv*の時に実行される方法がないか調べる
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
 
 permissions:
   contents: write
 
 jobs:
-  build_and_release:
+  update_draft_notes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,7 +29,7 @@ jobs:
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
           fallback: 0.1.0
-      
+
       - name: 'Get next minor version'
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
@@ -45,9 +46,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Draft Release Notes
+        id: draft_release_notes
         uses: release-drafter/release-drafter@v6
         with:
           tag: ${{steps.semvers.outputs.patch}}
-          publish: true
+          publish: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
