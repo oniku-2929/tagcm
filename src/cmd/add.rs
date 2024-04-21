@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn test_add() {
         let mut repo = UnitTestRepository::new();
-        add("test".to_string(), "echo test".to_string(), &mut repo).unwrap();
+        add("test".to_string(), "echo add test".to_string(), &mut repo).unwrap();
         assert_eq!(repo.get_tag_data("test").unwrap(), "echo test");
     }
 }
