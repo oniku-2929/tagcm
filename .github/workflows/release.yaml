@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - v*
-##ここmainかつタグがv*の時に実行される方法がないか調べる
 
 permissions:
   contents: write
@@ -14,7 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+        with:
+          ref: main
+          depth: 0
+
+      - name: Check if main branch
+        if: ${{ endsWith(github.ref_name, 'main') }} == false
+        run: echo ${{ github.ref_name}} is not main branch && exit 1
+
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
