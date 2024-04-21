@@ -56,8 +56,9 @@ jobs:
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{steps.semvers.outputs.minor}}
+          tag_name: ${{steps.draft_release_notes.outputs.tag_name}}
           draft: true
+          append_body: true
           files: |
             target/release/tagcm
         env:
