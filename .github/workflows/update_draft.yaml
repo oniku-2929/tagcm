@@ -28,7 +28,7 @@ jobs:
         id: previous_tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
-          fallback: 0.1.0
+          fallback: 0.0.0
 
       - name: 'Get next minor version'
         id: semvers
@@ -40,7 +40,7 @@ jobs:
         id: draft_release_notes
         uses: release-drafter/release-drafter@v6
         with:
-          tag: ${{steps.semvers.outputs.patch}}
+          tag: ${{steps.semvers.outputs.minor}}
           publish: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,7 +48,7 @@ jobs:
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{steps.draft_release_notes.outputs.tag}}
+          tag_name: ${{steps.semvers.outputs.minor}}
           files: |
             target/release/tagcm
         env:
