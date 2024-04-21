@@ -36,20 +36,20 @@ jobs:
         with:
           version: ${{ steps.previous_tag.outputs.tag }}
 
-      - name: Upload Binary to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{steps.semvers.outputs.patch}}
-          files: |
-            target/release/tagcm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Draft Release Notes
         id: draft_release_notes
         uses: release-drafter/release-drafter@v6
         with:
           tag: ${{steps.semvers.outputs.patch}}
           publish: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload Binary to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{steps.draft_release_notes.outputs.tag}}
+          files: |
+            target/release/tagcm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
