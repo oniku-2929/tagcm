@@ -48,12 +48,4 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Upload Binary to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{steps.semvers.outputs.patch}}
-          files: |
-            target/release/tagcm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
