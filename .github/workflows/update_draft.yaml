@@ -6,6 +6,7 @@ on:
       - main
     types:
       - closed
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -14,11 +15,17 @@ jobs:
   update_draft_notes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: main
           depth: 0
-      
+
+      - name: fetch tag
+        run: git fetch --tags origin
+
+      - name: print pwd and tag
+        run: pwd && git tag
+    
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
