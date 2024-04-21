@@ -1,26 +1,21 @@
-name: Build, Release and Create draft notes
+name: update draft notes
 
 on:
-  push:
-    tags:
-      - v*
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
 
 permissions:
   contents: write
 
 jobs:
-  build_and_release:
+  update_draft_notes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: main
-          depth: 0
-
-      - name: Check if main branch
-        if: ${{ endsWith(github.ref_name, 'main') }} == false
-        run: echo ${{ github.ref_name}} is not main branch && exit 1
-
+      
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
@@ -34,7 +29,7 @@ jobs:
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
           fallback: 0.1.0
-      
+
       - name: 'Get next minor version'
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
@@ -51,9 +46,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Draft Release Notes
+        id: draft_release_notes
         uses: release-drafter/release-drafter@v6
         with:
           tag: ${{steps.semvers.outputs.patch}}
-          publish: true
+          publish: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
