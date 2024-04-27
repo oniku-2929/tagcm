@@ -1,0 +1,40 @@
+name: Build, Release and Create draft notes
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  tagging_version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          depth: 0
+
+      - name: Check if main branch
+        if: ${{ endsWith(github.ref_name, 'main') }} == false
+        run: echo ${{ github.ref_name}} is not main branch && exit 1
+
+      - name: 'Get Previous tag'
+        id: previous_tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.1.0
+      
+      - name: 'Get next minor version'
+        id: semvers
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.previous_tag.outputs.tag }}
+
+      - name: Put Version Tag
+        uses: actions/checkout@v3
+        run: |
+           git tag ${{steps.semvers.outputs.patch}}
+           git push origin ${{steps.semvers.outputs.patch}}
+           echo "Tagged version ${{steps.semvers.outputs.patch}}"
+
