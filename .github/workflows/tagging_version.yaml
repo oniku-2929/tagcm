@@ -1,4 +1,4 @@
-name: Build, Release and Create draft notes
+name: tagging version
 
 on:
   workflow_dispatch: {}
