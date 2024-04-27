@@ -32,7 +32,6 @@ jobs:
           version: ${{ steps.previous_tag.outputs.tag }}
 
       - name: Put Version Tag
-        uses: actions/checkout@v3
         run: |
            git tag ${{steps.semvers.outputs.patch}}
            git push origin ${{steps.semvers.outputs.patch}}
