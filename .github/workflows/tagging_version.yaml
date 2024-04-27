@@ -33,7 +33,7 @@ jobs:
 
       - name: Put Version Tag
         run: |
-           git tag ${{steps.semvers.outputs.patch}}
-           git push origin ${{steps.semvers.outputs.patch}}
-           echo "Tagged version ${{steps.semvers.outputs.patch}}"
+           git tag v${{steps.semvers.outputs.minor}}
+           git push origin v${{steps.semvers.outputs.minor}}
+           echo "Tagged version v${{steps.semvers.outputs.minor}}"
 

@@ -18,7 +18,7 @@ jobs:
           depth: 0
 
       - name: Check if main branch
-        if: ${{ endsWith(github.ref_name, 'main') }} == false
+        if: ${{ !endsWith(github.ref_name, 'main') }}
         run: echo ${{ github.ref_name}} is not main branch && exit 1
 
       - name: Set Toolchain
@@ -44,7 +44,7 @@ jobs:
       - name: Draft Release Notes
         uses: release-drafter/release-drafter@v6
         with:
-          tag: ${{steps.semvers.outputs.patch}}
+          tag: ${{steps.semvers.outputs.minor}}
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
