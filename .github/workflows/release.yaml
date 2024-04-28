@@ -36,11 +36,17 @@ jobs:
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
           version: ${{ steps.previous_tag.outputs.tag }}
+      
+      - name: 'Check tag version'
+        if: ${{ steps.semvers.outputs.minor != github.ref_name }}
+        run: echo ${{steps.semvers.outputs.minor}} and ${{ github.ref_name }} are not the same && exit 1
 
-      - name: Draft Release Notes
+      - name: Publish Release Notes
         uses: release-drafter/release-drafter@v6
         with:
           tag: ${{steps.semvers.outputs.minor}}
+          append_body: true
+          draft: false
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
