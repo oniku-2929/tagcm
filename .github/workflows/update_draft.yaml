@@ -6,7 +6,7 @@ on:
       - main
     types:
       - closed
-  workflow_dispatch: {}
+  workflow_call:
 
 permissions:
   contents: write
@@ -25,20 +25,20 @@ jobs:
 
       - name: print pwd and tag
         run: pwd && git tag
-    
+
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-      
+
       - name: Build Release Binary
         run: cargo build --release
 
-      - name: 'Get Previous tag'
+      - name: "Get Previous tag"
         id: previous_tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
-      - name: 'Get next minor version'
+      - name: "Get next minor version"
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
@@ -52,11 +52,11 @@ jobs:
           publish: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{steps.draft_release_notes.outputs.tag_name}}
+          tag_name: ${{steps.semvers.outputs.minor}}
           draft: true
           append_body: true
           files: |
