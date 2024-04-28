@@ -9,7 +9,8 @@ on:
       - test/*
       - refactor/*
       - doc/*
-
+      - chore/*
+      - ci/*
 
 jobs:
   lint_build_test:
