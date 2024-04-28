@@ -57,8 +57,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{steps.semvers.outputs.minor}}
-          draft: true
-          append_body: true
+          generate_release_notes: false
           files: |
             target/release/tagcm
         env:
