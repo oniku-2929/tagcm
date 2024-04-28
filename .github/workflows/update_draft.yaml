@@ -23,9 +23,6 @@ jobs:
       - name: fetch tag
         run: git fetch --tags origin
 
-      - name: print pwd and tag
-        run: pwd && git tag
-
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
