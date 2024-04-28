@@ -21,33 +21,27 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-      
+
       - name: Build Release Binary
         run: cargo build --release
 
-      - name: 'Get Previous tag'
+      - name: "Get Previous tag"
         id: previous_tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
           fallback: 0.1.0
-      
-      - name: 'Get next minor version'
-        id: semvers
-        uses: "WyriHaximus/github-action-next-semvers@v1"
-        with:
-          version: ${{ steps.previous_tag.outputs.tag }}
-      
-      - name: 'Check tag version'
-        if: ${{ steps.semvers.outputs.minor != github.ref_name }}
-        run: echo ${{steps.semvers.outputs.minor}} and ${{ github.ref_name }} are not the same && exit 1
+
+      - name: "Check tag version"
+        if: ${{ steps.previous_tag.outputs.tag != github.ref_name }}
+        run: echo ${{ steps.previous_tag.outputs.tag }} and ${{ github.ref_name }} are not the same && exit 1
 
       - name: Publish Release Notes
         uses: release-drafter/release-drafter@v6
         with:
-          tag: ${{steps.semvers.outputs.minor}}
+          tag: ${{steps.previous_tag.outputs.tag}}
           append_body: true
           draft: false
           publish: true
+          latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
