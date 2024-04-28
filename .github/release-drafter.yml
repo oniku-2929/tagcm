@@ -55,3 +55,9 @@ autolabeler:
   - label: documentation
     branch:
       - '/^doc[/-].+/'
+  - label: chore
+    branch:
+      - '/^chore[/-].+/'
+  - label: ci
+    branch:
+      - '/^ci[/-].+/'
