@@ -15,11 +15,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: main
-          depth: 0
-
-      - name: Check if main branch
-        if: ${{ !endsWith(github.ref_name, 'main') }}
-        run: echo ${{ github.ref_name}} is not main branch && exit 1
+          fetch-depth: 0
 
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
