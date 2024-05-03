@@ -64,8 +64,8 @@ jobs:
             BIN_SUFFIX=".exe"
           fi
 
-          BIN_OUTPUT="target/${{ matrix.job.target }}/release/${PROJECT_NAME}${BIN_SUFFIX}"
-          BIN_RELEASE="${PROJECT_NAME}-${{ matrix.job.architecture }}${BIN_SUFFIX}"
+          BIN_OUTPUT="target/${{ matrix.job.target }}/release/tagcm${BIN_SUFFIX}"
+          BIN_RELEASE="tagcm-${{ matrix.job.architecture }}${BIN_SUFFIX}"
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
           echo "BIN_OUTPUT:$BIN_OUTPUT"
