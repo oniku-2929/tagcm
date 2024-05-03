@@ -30,6 +30,8 @@ jobs:
             target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.job.os }}
+    env:
+      BIN_RELEASE: ""
 
     steps:
       - uses: actions/checkout@v4
@@ -68,9 +70,6 @@ jobs:
           BIN_RELEASE="tagcm-${{ matrix.job.architecture }}${BIN_SUFFIX}"
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
-          echo "BIN_OUTPUT:$BIN_OUTPUT"
-          echo "BIN_RELEASE:$BIN_RELEASE"
-
           tar -cvf $BIN_RELEASE.tar.gz $BIN_RELEASE
           if [[ "${{ runner.os  }}" == 'Windows' ]]; then
             certutil -hashfile $BIN_RELEASE.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $BIN_RELEASE.sha256
@@ -97,8 +96,8 @@ jobs:
           draft: true
           append_body: true
           files: |
-            $BIN_RELEASE.tar.gz
-            $BIN_RELEASE.sha256
+            ${{ env.BIN_RELEASE }}.tar.gz
+            ${{ env.BIN_RELEASE }}.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
