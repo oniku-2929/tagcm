@@ -60,7 +60,7 @@ jobs:
       - name: Rename Binary
         run: |
           BIN_SUFFIX=""
-          if [[ {{ "${{ runner.os  }}" == 'Windows' ]] ; then
+          if [[ "${{ runner.os  }}" == 'Windows' ]] ; then
             BIN_SUFFIX=".exe"
           fi
 
@@ -69,7 +69,7 @@ jobs:
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
           tar czvf $BIN_RELEASE.tar.gz $BIN_RELEASE
-          if [[ {{ "${{ runner.os  }}" == 'Windows' ]]; then
+          if [[ "${{ runner.os  }}" == 'Windows' ]]; then
             certutil -hashfile $BIN_RELEASE.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $BIN_RELEASE.sha256
           else
             shasum -a 256 $BIN_RELEASE.tar.gz > $BIN_RELEASE.sha256
