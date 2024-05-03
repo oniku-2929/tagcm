@@ -68,6 +68,9 @@ jobs:
           BIN_RELEASE="${PROJECT_NAME}-${{ matrix.job.architecture }}${BIN_SUFFIX}"
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
+          echo "BIN_OUTPUT:$BIN_OUTPUT"
+          echo "BIN_RELEASE:$BIN_RELEASE"
+
           tar -cvf $BIN_RELEASE.tar.gz $BIN_RELEASE
           if [[ "${{ runner.os  }}" == 'Windows' ]]; then
             certutil -hashfile $BIN_RELEASE.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $BIN_RELEASE.sha256
