@@ -30,10 +30,6 @@ impl TagDataRepository for UnitTestRepository {
         self.data.keys().cloned().collect()
     }
 
-    fn get_all_tag_data(&self) -> Vec<String> {
-        self.data.values().cloned().collect()
-    }
-
     fn get_all_data(&self) -> Vec<(String, String)> {
         self.data
             .iter()
@@ -48,9 +44,5 @@ impl TagDataRepository for UnitTestRepository {
 
     fn remove_tag_data(&mut self, tag: &str) {
         self.data.remove(tag);
-    }
-
-    fn get_data_path(&self) -> String {
-        "".to_string()
     }
 }
