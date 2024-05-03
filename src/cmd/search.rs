@@ -185,7 +185,7 @@ impl App {
     }
 }
 
-pub fn search_by_input<T: TagDataRepository>(repo: &T) -> Result<()>
+pub fn search_by_input<T>(repo: &T) -> Result<()>
 where
     T: TagDataRepository,
 {
