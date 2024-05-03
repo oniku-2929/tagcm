@@ -13,7 +13,24 @@ permissions:
 
 jobs:
   update_draft_notes:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job:
+          - os: ubuntu-22.04
+            architecture: x86_64
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-22.04
+            architecture: arm64
+            target: aarch64-unknown-linux-gnu
+          - os: windows-2022
+            architecture: x86_64
+            target: x86_64-pc-windows-msvc
+          - os: maoos-14
+            architecture: arm64
+            target: aarch64-apple-darwin
+
+    runs-on: ${{ matrix.job.os }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,13 +40,42 @@ jobs:
       - name: fetch tag
         run: git fetch --tags origin
 
+      - name: install strip command
+        shell: bash
+        run: |
+          if [[ {{ "${{ matrix.job.target }}" == aarch64-unknown-linux-gnu ]]; then
+              sudo apt update
+              sudo apt-get install -y binutils-aarch64-linux-gnu
+          fi
+
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
+          targets: ${{ matrix.job.target }}
 
       - name: Build Release Binary
-        run: cargo build --release
+        run: cargo build --verbose --locked --release --target ${{ matrix.job.target }}
+
+      - name: Rename Binary
+        run: |
+          BIN_SUFFIX=""
+          if [[ {{ "${{ runner.os  }}" == 'Windows' ]] ; then
+            BIN_SUFFIX=".exe"
+          fi
+
+          BIN_OUTPUT="target/${{ matrix.job.target }}/release/${PROJECT_NAME}${BIN_SUFFIX}"
+          BIN_RELEASE="${PROJECT_NAME}-${{ matrix.job.architecture }}${BIN_SUFFIX}"
+          mv $BIN_OUTPUT ./$BIN_RELEASE
+
+          tar czvf $BIN_RELEASE.tar.gz $BIN_RELEASE
+          if [[ {{ "${{ runner.os  }}" == 'Windows' ]]; then
+            certutil -hashfile $BIN_RELEASE.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $BIN_RELEASE.sha256
+          else
+            shasum -a 256 $BIN_RELEASE.tar.gz > $BIN_RELEASE.sha256
+          fi
+
+          echo "BIN_RELEASE=$BIN_RELEASE" >> $GITHUB_ENV
 
       - name: "Get Previous tag"
         id: previous_tag
@@ -48,7 +94,8 @@ jobs:
           draft: true
           append_body: true
           files: |
-            target/release/tagcm
+            $BIN_RELEASE.tar.gz
+            $BIN_RELEASE.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
