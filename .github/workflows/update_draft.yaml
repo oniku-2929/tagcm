@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Set Toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@1.78.0
         with:
           toolchain: stable-${{ matrix.job.target }}
           targets: ${{ matrix.job.target }}
