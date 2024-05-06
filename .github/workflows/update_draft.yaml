@@ -25,7 +25,7 @@ jobs:
           - os: windows-2022
             architecture: x86_64
             target: x86_64-pc-windows-msvc
-          - os: maoos-14
+          - os: macos-14
             architecture: arm64
             target: aarch64-apple-darwin
 
