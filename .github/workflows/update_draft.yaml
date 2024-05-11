@@ -4,27 +4,33 @@ on:
   pull_request:
     branches:
       - main
+      - feature/*
     types:
       - closed
-  workflow_call:
 
 permissions:
   contents: write
 
 jobs:
+  get_next_version:
+    uses: oniku-2929/tagcm/.github/workflows/get_next_version.yaml@main
+    with:
+      minor: true
+
   update_draft_notes:
+    needs: get_next_version
     strategy:
       matrix:
         job:
           - os: ubuntu-22.04
             architecture: x86_64
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
-            architecture: arm64
-            target: aarch64-unknown-linux-gnu
-          - os: windows-2022
-            architecture: x86_64
-            target: x86_64-pc-windows-msvc
+          #- os: ubuntu-22.04
+          #  architecture: arm64
+          #  target: aarch64-unknown-linux-gnu
+          #- os: windows-2022
+          #  architecture: x86_64
+          #  target: x86_64-pc-windows-msvc
           #- os: macos-14
           #  architecture: arm64
           #  target: aarch64-apple-darwin
@@ -39,6 +45,12 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Check Next Version #ここがそもそも取れない
+        run: |
+          cat $GITHUB_ENV
+          echo get_next_version.result:${{ needs.get_next_version.result}}
+          echo NEXT_VERION:${{ needs.get_next_version.outputs.next-version}}
+
       - name: fetch tag
         run: git fetch --tags origin
 
@@ -51,7 +63,7 @@ jobs:
           fi
 
       - name: Set Toolchain
-        uses: dtolnay/rust-toolchain@1.78.0
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable-${{ matrix.job.target }}
           targets: ${{ matrix.job.target }}
@@ -88,20 +100,10 @@ jobs:
 
           echo "BIN_RELEASE=$BIN_RELEASE" >> $GITHUB_ENV
 
-      - name: "Get Previous tag"
-        id: previous_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-
-      - name: "Get next minor version"
-        id: semvers
-        uses: "WyriHaximus/github-action-next-semvers@v1"
-        with:
-          version: ${{ steps.previous_tag.outputs.tag }}
-
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{steps.semvers.outputs.minor}}
+          tag_name: v${{needs.get_next_version.outputs.next-version}}
           draft: true
           append_body: true
           files: |
@@ -115,6 +117,6 @@ jobs:
         uses: release-drafter/release-drafter@v6
         with:
           publish: false
-          name: v${{steps.semvers.outputs.minor}}
+          name: v${{needs.get_next_version.outputs.next-version}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
