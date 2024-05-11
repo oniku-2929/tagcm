@@ -45,7 +45,7 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Check Next Version #ここがそもそも取れない
+      - name: Check Next Version
         run: |
           cat $GITHUB_ENV
           echo get_next_version.result:${{ needs.get_next_version.result}}
