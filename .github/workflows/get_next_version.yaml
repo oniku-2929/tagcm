@@ -22,6 +22,9 @@ on:
       next-version:
         description: "Get next version"
         value: ${{ jobs.get-next-version.outputs.next-version }}
+      test:
+        description: "Test"
+        value: "test"
 
 jobs:
   get-next-version:
@@ -35,11 +38,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-          #ref: feature/37_cross_paltform_bin_distribution
           fetch-depth: 0
 
       - name: Get Currnet Version
-        id: get_current_version
         run: |
           echo "CURRENT_VERSION=$(grep '^version =' Cargo.toml | cut -d '"' -f 2)" >> $GITHUB_ENV
 
@@ -60,3 +61,5 @@ jobs:
 
           echo "NEXT_VERSION=$NEXT_VERSION"
           echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
