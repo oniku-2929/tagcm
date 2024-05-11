@@ -55,9 +55,8 @@ jobs:
           elif [ "${{ inputs.patch }}" == "true" ]; then
             VERSION_TYPE="patch"
           fi
-          echo VERSION_TYPE=$VERSION_TYPE
           echo CURRENT_VERSION=$CURRENT_VERSION
           NEXT_VERSION=`bash .github/workflows/get_next_version.sh $VERSION_TYPE`
 
           echo "NEXT_VERSION=$NEXT_VERSION"
-          echo "next-version=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
