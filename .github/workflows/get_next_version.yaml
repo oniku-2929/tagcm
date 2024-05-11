@@ -19,9 +19,12 @@ on:
         type: boolean
         default: false
     outputs:
-      next-version:
-        description: "Get next version"
-        value: ${{ jobs.get-next-version.outputs.next-version }}
+      output:
+        description: "Next version"
+        value: ${{ jobs.get-next-version.outputs.output }}
+      test:
+        description: "Test"
+        value: "test"
 
 jobs:
   get-next-version:
@@ -30,16 +33,11 @@ jobs:
     env:
       CURRENT_VERSION: ""
     outputs:
-      next-version: ${{ steps.next-version.outputs.next-version }}
+      output: ${{ steps.next-version.outputs.output }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-          #ref: feature/37_cross_paltform_bin_distribution
-          fetch-depth: 0
 
       - name: Get Currnet Version
-        id: get_current_version
         run: |
           echo "CURRENT_VERSION=$(grep '^version =' Cargo.toml | cut -d '"' -f 2)" >> $GITHUB_ENV
 
@@ -55,9 +53,8 @@ jobs:
           elif [ "${{ inputs.patch }}" == "true" ]; then
             VERSION_TYPE="patch"
           fi
-          echo VERSION_TYPE=$VERSION_TYPE
           echo CURRENT_VERSION=$CURRENT_VERSION
           NEXT_VERSION=`bash .github/workflows/get_next_version.sh $VERSION_TYPE`
 
           echo "NEXT_VERSION=$NEXT_VERSION"
-          echo "next-version=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "output=$NEXT_VERSION" >> $GITHUB_OUTPUT
