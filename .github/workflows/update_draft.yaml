@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   get_next_version:
-    uses: oniku-2929/tagcm/.github/workflows/get_next_version.yaml@feature/37_cross_paltform_bin_distribution
+    uses: ./.github/workflows/get_next_version.yaml
     with:
       minor: true
 
@@ -23,17 +23,13 @@ jobs:
       matrix:
         job:
           - os: ubuntu-22.04
-            architecture: x86_64
             target: x86_64-unknown-linux-gnu
-          #- os: ubuntu-22.04
-          #  architecture: arm64
-          #  target: aarch64-unknown-linux-gnu
-          #- os: windows-2022
-          #  architecture: x86_64
-          #  target: x86_64-pc-windows-msvc
-          #- os: macos-14
-          #  architecture: arm64
-          #  target: aarch64-apple-darwin
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+          - os: macos-14
+            target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.job.os }}
     env:
@@ -42,21 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Print Next Version
-        run: |
-          cat $GITHUB_ENV
-          echo get_next_version.result:${{ needs.get_next_version.result}}
-          echo NEXT_VERION:${{ needs.get_next_version.outputs.output }}
-
       - name: Check Next Version
         run: |
-          if [[ "${{ needs.get_next_version.outputs.output }}" == "" ]]; then
+          if [[ "${{ needs.get_next_version.outputs.nextversion }}" == "" ]]; then
             echo "Next Version is not set"
             exit 1
           fi
-
-      - name: fetch tag
-        run: git fetch --tags origin
 
       - name: install strip command
         shell: bash
@@ -67,19 +54,10 @@ jobs:
           fi
 
       - name: Set Toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable-${{ matrix.job.target }}
+          toolchain: "stable-${{ matrix.job.target }}"
           targets: ${{ matrix.job.target }}
-
-      - name: Setup rust tools
-        shell: bash
-        run: |
-          if [[ "${{ matrix.job.target }}" == "aarch64-unknown-linux-gnu" ]]; then
-              #rustup target add aarch64-unknown-linux-gnu
-              #rustup set default-host aarch64-unknown-linux-gnu
-              ls -la /home/runner/.rustup/toolchains/
-          fi
 
       - name: Build Release Binary
         run: cargo build --verbose --locked --release --target ${{ matrix.job.target }}
@@ -92,7 +70,7 @@ jobs:
           fi
 
           BIN_OUTPUT="target/${{ matrix.job.target }}/release/tagcm${BIN_SUFFIX}"
-          BIN_RELEASE="tagcm-${{ matrix.job.architecture }}${BIN_SUFFIX}"
+          BIN_RELEASE="tagcm-${{ matrix.job.target }}${BIN_SUFFIX}"
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
           tar -cvf $BIN_RELEASE.tar.gz $BIN_RELEASE
@@ -107,7 +85,7 @@ jobs:
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{needs.get_next_version.outputs.next-version}}
+          tag_name: v${{needs.get_next_version.outputs.nextversion}}
           draft: true
           append_body: true
           files: |
@@ -121,6 +99,6 @@ jobs:
         uses: release-drafter/release-drafter@v6
         with:
           publish: false
-          name: v${{needs.get_next_version.outputs.next-version}}
+          name: v${{needs.get_next_version.outputs.nextversion}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
