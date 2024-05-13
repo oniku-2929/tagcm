@@ -19,7 +19,7 @@ on:
         type: boolean
         default: false
     outputs:
-      output:
+      nextversion:
         description: "Next version"
         value: ${{ jobs.get-next-version.outputs.output }}
       test:
