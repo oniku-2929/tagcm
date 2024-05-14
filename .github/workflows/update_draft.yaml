@@ -56,8 +56,16 @@ jobs:
 
       - name: Set Toolchain
         uses: dtolnay/rust-toolchain@master
+        if: ${{ matrix.job.target != 'aarch64-unknown-linux-gnu' }}
         with:
           toolchain: "stable-${{ matrix.job.target }}"
+          targets: ${{ matrix.job.target }}
+
+      - name: Set Toolchain aarch64-unknown-linux
+        uses: dtolnay/rust-toolchain@master
+        if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
+        with:
+          toolchain: "${{ matrix.job.target }}"
           targets: ${{ matrix.job.target }}
 
       - name: Build Release Binary
