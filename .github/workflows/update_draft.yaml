@@ -65,8 +65,15 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
         with:
-          #toolchain: "${{ matrix.job.target }}"
           targets: ${{ matrix.job.target }}
+
+      - name: Build Release Binary
+        if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
+        run: |
+          rustup target add ${{ matrix.job.target }}
+          rustup toolchain install stable-${{ matrix.job.target }}
+          rustup default ${{ matrix.job.target }}
+          rustup toolchain list
 
       - name: Build Release Binary
         run: cargo build --verbose --locked --release --target ${{ matrix.job.target }}
