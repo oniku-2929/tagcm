@@ -61,16 +61,16 @@ jobs:
           toolchain: "stable-${{ matrix.job.target }}"
           targets: ${{ matrix.job.target }}
 
-      - name: Set Toolchain aarch64-unknown-linux
+      - name: Install Toolchain aarch64-unknown-linux
         uses: dtolnay/rust-toolchain@stable
         if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
         with:
           targets: ${{ matrix.job.target }}
 
-      - name: Build Release Binary
+      - name: Set Toolchain aarch64-unknown-linux
         if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
         run: |
-          rustup target add ${{ matrix.job.target }}
+          rustup target add stable-${{ matrix.job.target }}
           rustup toolchain install stable-${{ matrix.job.target }}
           rustup default ${{ matrix.job.target }}
           rustup toolchain list
