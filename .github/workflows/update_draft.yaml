@@ -70,8 +70,8 @@ jobs:
       - name: Set Toolchain aarch64-unknown-linux
         if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
         run: |
+          rustup target add ${{ matrix.job.target }}
           rustup toolchain install stable-${{ matrix.job.target }}
-          rustup target add stable-${{ matrix.job.target }}
           rustup default stable-${{ matrix.job.target }}
           rustup toolchain list
 
