@@ -24,12 +24,12 @@ jobs:
         job:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
-            target: aarch64-unknown-linux-gnu
-          - os: windows-2022
-            target: x86_64-pc-windows-msvc
-          - os: macos-14
-            target: aarch64-apple-darwin
+          #- os: ubuntu-22.04
+          #  target: aarch64-unknown-linux-gnu
+          #- os: windows-2022
+          #  target: x86_64-pc-windows-msvc
+          #- os: macos-14
+          #  target: aarch64-apple-darwin
 
     runs-on: ${{ matrix.job.os }}
     env:
@@ -51,7 +51,7 @@ jobs:
         run: |
           if [[ "${{ matrix.job.target }}" == "aarch64-unknown-linux-gnu" ]]; then
               sudo apt update
-              sudo apt-get install -y binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu
+              sudo apt-get install -y gcc-aarch64-linux-gnu
           fi
 
       - name: Set Toolchain
@@ -67,16 +67,9 @@ jobs:
         with:
           targets: ${{ matrix.job.target }}
 
-      - name: Set Toolchain aarch64-unknown-linux
-        if: ${{ matrix.job.target == 'aarch64-unknown-linux-gnu' }}
-        run: |
-          rustup target add ${{ matrix.job.target }}
-          rustup toolchain install stable-${{ matrix.job.target }}
-          rustup default stable-${{ matrix.job.target }}
-          rustup toolchain list
-
       - name: Build Release Binary
-        run: cargo build --verbose --locked --release --target ${{ matrix.job.target }}
+        run: |
+          cargo build --verbose --locked --release --target ${{ matrix.job.target }}
 
       - name: Rename Binary
         shell: bash
