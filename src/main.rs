@@ -53,7 +53,7 @@ struct Version {}
 
 const COMMAND_NAME: &str = "tagcm";
 const DEFAULT_FILE_NAME: &str = "tags.json";
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn get_data_path(data_path: Option<String>) -> String {
     if let Some(path) = data_path {
