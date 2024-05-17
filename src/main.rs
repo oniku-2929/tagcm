@@ -23,6 +23,7 @@ enum Command {
     Delete(Delete),
     Show(Show),
     Search(Search),
+    Version(Version),
 }
 
 #[derive(Parser)]
@@ -47,8 +48,12 @@ struct Search {
     search_str: Option<String>,
 }
 
+#[derive(Parser)]
+struct Version {}
+
 const COMMAND_NAME: &str = "tagcm";
 const DEFAULT_FILE_NAME: &str = "tags.json";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn get_data_path(data_path: Option<String>) -> String {
     if let Some(path) = data_path {
@@ -96,6 +101,9 @@ fn main() -> Result<()> {
                 cmd::search::search_by_input(&repo)?;
             }
         },
+        Command::Version(_) => {
+            println!("tagcm version: {}", VERSION);
+        }
     }
     Ok(())
 }
