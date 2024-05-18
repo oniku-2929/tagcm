@@ -1,4 +1,4 @@
-name: Build, Release and Create draft notes
+name: Release draft
 
 on:
   push:
@@ -10,35 +10,35 @@ permissions:
 
 jobs:
   build_and_release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: main
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Set Toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
+      - name: Get tag
+        id: tag
+        run: |
+          echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
-      - name: Build Release Binary
-        run: cargo build --release
+      - name: Print tag
+        run: echo "Release ${{steps.tag.outputs.tag}}"
 
-      - name: "Get Current tag"
-        id: current_tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        with:
-          fallback: 0.1.0
-
-      - name: "Check tag version"
-        if: ${{ steps.current_tag.outputs.tag != github.ref_name }}
-        run: echo ${{ steps.current_tag.outputs.tag }} and ${{ github.ref_name }} are not the same && exit 1
+      - name: Check Release exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
+          && sudo mkdir -p -m 755 /etc/apt/keyrings \
+          && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+          && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+          && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+          && sudo apt update \
+          && sudo apt install gh -y
+          gh release view ${{steps.tag.outputs.tag}} || echo "Release ${{steps.tag.outputs.tag}}" not found && exit 1
 
       - name: Publish Release Notes
         uses: release-drafter/release-drafter@v6
         with:
-          tag: ${{steps.current_tag.outputs.tag}}
+          tag: ${{steps.tag.outputs.tag}}
           append_body: true
           draft: false
           publish: true
