@@ -33,7 +33,18 @@ jobs:
           && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
           && sudo apt update \
           && sudo apt install gh -y
-          gh release view ${{steps.tag.outputs.tag}} || echo "Release ${{steps.tag.outputs.tag}}" not found && exit 1
+
+          gh release view ${{steps.tag.outputs.tag}}
+          echo "Release ${{steps.tag.outputs.tag}}" found
+
+      - name: Check Cargo.toml version
+        run: |
+          CARGO_VERSION=`yq '.package.version' -oy Cargo.toml`
+          TAG_VERSION=`echo ${{steps.tag.outputs.tag}} | cut -c 2-`
+          if [[ "$TAG_VERSION" != "$CARGO_VERSION" ]]; then
+            echo "Cargo.toml version:$CARGO_VERSION does not match tag version:$TAG_VERSION"
+            exit 1
+          fi
 
       - name: Publish Release Notes
         uses: release-drafter/release-drafter@v6
