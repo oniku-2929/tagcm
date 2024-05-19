@@ -45,6 +45,9 @@ jobs:
             exit 1
           fi
 
+      - name: Update toml version
+        run: cargo set-version ${{needs.get_next_version.outputs.nextversion}}
+
       - name: install strip command
         shell: bash
         run: |
