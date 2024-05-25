@@ -92,7 +92,7 @@ jobs:
           BIN_RELEASE="tagcm-${{ matrix.job.target }}${BIN_SUFFIX}"
           mv $BIN_OUTPUT ./$BIN_RELEASE
 
-          tar -cvf $BIN_RELEASE.tar.gz $BIN_RELEASE
+          tar -zcvf $BIN_RELEASE.tar.gz $BIN_RELEASE
           if [[ "${{ runner.os  }}" == 'Windows' ]]; then
             certutil -hashfile $BIN_RELEASE.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $BIN_RELEASE.sha256
           else
