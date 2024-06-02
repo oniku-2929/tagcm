@@ -24,6 +24,7 @@ enum Command {
     Show(Show),
     Search(Search),
     Version(Version),
+    Update(Update),
 }
 
 #[derive(Parser)]
@@ -50,6 +51,9 @@ struct Search {
 
 #[derive(Parser)]
 struct Version {}
+
+#[derive(Parser)]
+struct Update {}
 
 const COMMAND_NAME: &str = "tagcm";
 const DEFAULT_FILE_NAME: &str = "tags.json";
@@ -103,6 +107,16 @@ fn main() -> Result<()> {
         },
         Command::Version(_) => {
             println!("tagcm version: {}", VERSION);
+        }
+        Command::Update(_) => {
+            if cfg!(debug_assertions) {
+                let override_version = option_env!("TAGCM_OVERRIDE_VERSION")
+                    .unwrap_or(VERSION)
+                    .to_string();
+                cmd::update::update(&override_version)?
+            } else {
+                cmd::update::update(VERSION)?
+            }
         }
     }
     Ok(())
