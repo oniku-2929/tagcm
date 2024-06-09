@@ -105,7 +105,6 @@ tagcm --data-path=".local.json" show all
 #save data on ".local.env.json" and show it
 TAGCM_DATA_PATH=.local.env.json tagcm add something "echo do something"
 TAGCM_DATA_PATH=.local.env.json tagcm show all
-tagcm show all --data-path ".local.json"
 ```
 
 ### License
