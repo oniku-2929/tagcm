@@ -93,7 +93,20 @@ tagcm update
 
 ### Data Storage
 
-The data is stored in a JSON file named `tags.json`. The path to this file can be specified using the --data-path option. If no path is specified, the file is stored in the default configuration directory.
+The data is stored in a JSON file named `tags.json`. The path to this file can be specified using `TAGCM_DATA_PATH` environment variable or `--data-path` option. If no path is specified, the file is stored in the default configuration directory.
+
+For example,
+
+```
+#save data on ".local.json" and show it
+tagcm --data-path=".local.json" add something "echo do something"
+tagcm --data-path=".local.json" show all
+
+#save data on ".local.env.json" and show it
+TAGCM_DATA_PATH=.local.env.json tagcm add something "echo do something"
+TAGCM_DATA_PATH=.local.env.json tagcm show all
+tagcm show all --data-path ".local.json"
+```
 
 ### License
 

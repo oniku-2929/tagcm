@@ -58,9 +58,13 @@ struct Update {}
 const COMMAND_NAME: &str = "tagcm";
 const DEFAULT_FILE_NAME: &str = "tags.json";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const ENV_DATA_PATH: &str = "TAGCM_DATA_PATH";
 
 fn get_data_path(data_path: Option<String>) -> String {
     if let Some(path) = data_path {
+        return path;
+    }
+    if let Ok(path) = std::env::var(ENV_DATA_PATH) {
         return path;
     }
     if let Some(base_dir) = BaseDirs::new() {
