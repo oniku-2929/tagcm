@@ -83,6 +83,14 @@ Enter:to choose the command to clipboard and exit search mode.
 Esc:to exit search mode.
 ```
 
+### Update tagcm itself
+
+for update tagcm itself to latest version, you can run update command
+
+```
+tagcm update
+```
+
 ### Data Storage
 
 The data is stored in a JSON file named `tags.json`. The path to this file can be specified using the --data-path option. If no path is specified, the file is stored in the default configuration directory.
