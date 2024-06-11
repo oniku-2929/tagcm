@@ -4,7 +4,28 @@ tagcm is a command line tool for tagging commands. It allows you to some functio
 
 ## Installation
 
-WIP
+### Mac
+
+- Download binary from Release page.
+- `tar -zxvf tagcm-aarch64-apple-darwin.tar.gz`
+- `mv tagcm-aarch64-apple-darwin /usr/local/bin/tagcm`
+- `xattr -d com.apple.quarantine /usr/local/bin/tagcm`
+
+### Linux
+
+- Download binary from Release page.
+- `tar -zxvf "tagcm-`uname -a`-unknown-linux-gnu.tar.gz"`
+- `mv "tagcm-`uname -a`-unknown-linux-gnu.tar.gz" /usr/local/bin/tagcm`
+
+### Windows
+
+- Download binary from Release page.
+- run command prompt
+- `mkdir %HOMEPATH%\.tagcm`
+- `tar -zxvf tagcm-x86_64-pc-windows-msvc.exe.tar.gz`
+- `mv tagcm-x86_64-pc-windows-msvc.exe %HOMEPATH%\.tagcm\tagcm.exe`
+- add `%HOMEPATH%\.tagcm` to PATH
+
 
 ## Usage
 
