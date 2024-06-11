@@ -19,7 +19,13 @@ tagcm is a command line tool for tagging commands. It allows you to some functio
 
 ### Windows
 
-TODO:
+- Download binary from Release page.
+- run command prompt
+- `mkdir %HOMEPATH%\.tagcm`
+- `tar -zxvf tagcm-x86_64-pc-windows-msvc.exe.tar.gz`
+- `mv tagcm-x86_64-pc-windows-msvc.exe %HOMEPATH%\.tagcm\tagcm.exe`
+- add `%HOMEPATH%\.tagcm` to PATH
+
 
 ## Usage
 
