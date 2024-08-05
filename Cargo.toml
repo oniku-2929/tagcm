@@ -17,4 +17,4 @@ flate2 = "1.0.30"
 reqwest = {version = "0.12.5", features =["blocking", "json", "rustls-tls"], default-features = false}
 tar = "0.4.41"
 rustc-serialize = "0.3.25"
-regex = "1.10.5"
+regex = "1.10.6"
