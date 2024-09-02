@@ -207,6 +207,7 @@ fn run_app<B: Backend, T: TagDataRepository>(
     mut app: App,
     repo: &T,
 ) -> io::Result<()> {
+    app.auto_complete(repo);
     loop {
         terminal.draw(|f| render(f, &app))?;
 
